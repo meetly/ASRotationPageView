@@ -7,7 +7,7 @@
   3.可横向滑动和纵向滑动<br>
 ## 演示 
                     横向滑动<br>
-   <img src="https://github.com/meetly/ASRotationPageView/blob/master/images/horizontal.gif" width="300" height="620" alt="横向滑动"/>
+   <img src="https://github.com/meetly/ASRotationPageView/blob/master/images/horizontal.gif" width="300" height="620" alt="横向滑动"/><br>
                     纵向滑动<br>
     <img src="https://github.com/meetly/ASRotationPageView/blob/master/images/vertical.gif" width="300" height="620" alt="横向滑动"/>
     

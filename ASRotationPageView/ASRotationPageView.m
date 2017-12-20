@@ -223,7 +223,7 @@
                 }else if (scrollView.contentOffset.y <= 0) {//滑动到最后个切换到第一个
                     [scrollView setContentOffset:CGPointMake(0, self.frame.size.height*(self.showImagesArr.count-1)) animated:NO];
                 }
-                int page =  scrollView.contentOffset.x/self.frame.size.height;
+                int page =  scrollView.contentOffset.y/self.frame.size.height;
                 self.currentPage = page-1;
                 break;
         }
@@ -277,7 +277,7 @@
                 }else if (scrollView.contentOffset.y <= 0) {//滑动到最后个切换到第一个
                     [scrollView setContentOffset:CGPointMake(0, self.frame.size.height*(self.showImagesArr.count-1)) animated:NO];
                 }
-                int page =  scrollView.contentOffset.x/self.frame.size.height;
+                int page =  scrollView.contentOffset.y/self.frame.size.height;
                 self.currentPage = page-1;
                 break;
         }
@@ -291,7 +291,7 @@
                 break;
                 
             default:{
-                int page =  scrollView.contentOffset.x/self.frame.size.height;
+                int page =  scrollView.contentOffset.y/self.frame.size.height;
                 self.currentPage = page;
                 
             }

@@ -62,3 +62,5 @@
     [self.rotaView showStart];
     [self.view addSubview:self.rotaView];
 ```
+## 建议配合ASPageView使用（可自定义的pageViewController）
+  [ASPageView地址：https://github.com/meetly/ASPageView](https://github.com/meetly/ASPageView) 

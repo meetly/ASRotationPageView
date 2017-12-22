@@ -35,7 +35,7 @@
 }
 - (void)showStart {
     //不是无限轮播，不能自动播
-    if (!self.infiniteSliding) {
+    if (self.infiniteSliding == NO) {
         self.autoSliding = NO;
     }
     [self initializeView];
@@ -159,7 +159,6 @@
         if (@available(iOS 11.0, *)) {
             _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
         }
-        _scrollView.backgroundColor = [UIColor redColor];
         self.currentPage = 0;
     }
     return _scrollView;

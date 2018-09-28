@@ -30,6 +30,10 @@ typedef NS_ENUM(NSInteger, ASRotationPageViewAlign) {
 /** 轮播图滚动时间间隔 - 默认是5秒 */
 @property (nonatomic, assign) NSTimeInterval scrollTimeInterval;
 
+
+/** 手动滑动  默认yes */
+@property (nonatomic, assign) BOOL scrollEnabled;
+
 /** 滚动方向 - 默认横向滚动 */
 @property (nonatomic, assign) ASRotationScrollDirection scrollDirection;
 
@@ -41,7 +45,7 @@ typedef NS_ENUM(NSInteger, ASRotationPageViewAlign) {
 /** 滑动完成的回调 */
 @property (nonatomic, copy) void(^ScrollDidEnd)(NSUInteger currentPage);
 /** 点击view的回调 */
-@property (nonatomic, copy) void(^SelectView)(UIView *view);
+@property (nonatomic, copy) void(^SelectView)(NSInteger index);
 
 /** 偏移到制定页 */
 @property (nonatomic, assign) NSUInteger contentOffsetPage;

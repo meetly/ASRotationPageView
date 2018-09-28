@@ -8,6 +8,9 @@
 
 #import "ASRotationPageView.h"
 #import <UIImageView+WebCache.h>
+#import <QuartzCore/QuartzCore.h>
+
+
 @interface ASRotationPageView () <UIScrollViewDelegate>
 
 /** 滑动视图 */
@@ -44,46 +47,65 @@
     self.infiniteSliding = YES;
     self.scrollDirection = ASRotationScrollDirectionHorizontal;
     self.autoSliding = YES;
+    self.scrollEnabled = YES;
     self.scrollTimeInterval = 5;
 }
 - (void)initializeView {
     //无限轮播前后添加图片
+    if (self.imagesArr.count == 1) self.infiniteSliding = NO;
     if (self.infiniteSliding) {
         self.showImagesArr = [NSMutableArray arrayWithArray:self.imagesArr];
-        [self.showImagesArr insertObject:self.imagesArr.lastObject atIndex:0];
-        [self.showImagesArr addObject:self.imagesArr.firstObject];
+        
+        //插入最后一个图到第一个
+        UIImageView *firstImg = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
+        firstImg.image = [self convertViewToImage:self.showImagesArr.lastObject];
+        UIView *showView = self.showImagesArr.firstObject;
+
+        
+        //第一个图放最后一个
+        UIImageView *lastImg = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
+        lastImg.image = [self convertViewToImage:self.showImagesArr.firstObject];
+        
+        [self.showImagesArr insertObject:firstImg atIndex:0];
+        [self.showImagesArr addObject:lastImg];
+        
     }else {
         self.showImagesArr = [NSMutableArray arrayWithArray:self.imagesArr];
     }
     
+    self.scrollView.scrollEnabled = self.scrollEnabled;
     //创建imageView
     for (int i = 0; i<self.showImagesArr.count; i++) {
         UIImageView *imageView = [[UIImageView alloc] init];
         imageView.tag = 100 + i;
         imageView.userInteractionEnabled = YES;
-        imageView.backgroundColor = ColorRandom;
         //图片点击事件
         UITapGestureRecognizer *tapGR = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGR:)];
         [imageView addGestureRecognizer:tapGR];
         
-        //数组中是url还是图片名字或者view
-        if ([self isUrl:self.showImagesArr[i]]) {
-            [imageView sd_setImageWithURL:self.showImagesArr[i] placeholderImage:[UIImage imageNamed:self.placeholderName]];
-        }else if ([self.showImagesArr[i] isKindOfClass:[UIView class]]) {
-            [imageView addSubview:self.showImagesArr[i]];
-        }else {
-            imageView.image = [UIImage imageNamed:self.showImagesArr[i]];
-
-        }
         switch (self.scrollDirection) {
             case ASRotationScrollDirectionHorizontal:
                 imageView.frame = CGRectMake(self.frame.size.width * i, 0, self.frame.size.width, self.frame.size.height);
                 break;
             default:
                 imageView.frame = CGRectMake(0, i * self.frame.size.height, self.frame.size.width, self.frame.size.height);
-                NSLog(@"%@",NSStringFromCGRect(imageView.frame));
+
                 break;
         }
+
+        //数组中是url还是图片名字或者view
+        if ([self.showImagesArr[i] isKindOfClass:[UIView class]]) {
+            UIView *view = (UIView *)self.showImagesArr[i];
+            [imageView addSubview:view];
+        }else if ([self.showImagesArr[i] isKindOfClass:[UIImage class]]) {
+            imageView.image = self.showImagesArr[i];
+
+        }else if ([self.showImagesArr[i] isKindOfClass:[NSString class]]) {
+            if ([self isUrl:self.showImagesArr[i]]) {
+                [imageView sd_setImageWithURL:self.showImagesArr[i] placeholderImage:[UIImage imageNamed:self.placeholderName]];
+            }
+        }
+
         [self.scrollView addSubview:imageView];
 
     }
@@ -98,7 +120,12 @@
 
 #pragma mark -----------  点击事件 --------------------
 - (void)tapGR:(UITapGestureRecognizer *)tapGR {
-    if (self.SelectView) self.SelectView(tapGR.view);
+    if (self.infiniteSliding) {
+        if (self.SelectView) self.SelectView(tapGR.view.tag-100-1);
+    }else {
+        if (self.SelectView) self.SelectView(tapGR.view.tag-100);
+
+    }
 }
 
 #pragma mark -----------   是否是网址 -------------------
@@ -109,6 +136,18 @@
     return [emailTest evaluateWithObject:url];
 }
 
+#pragma mark -----------   view截图 -------------------
+- (UIImage *)convertViewToImage:(UIView *)view {
+    
+    UIImage *imageRet = [[UIImage alloc]init];
+    UIGraphicsBeginImageContextWithOptions(view.frame.size, YES, [UIScreen mainScreen].scale);
+    [view.layer renderInContext:UIGraphicsGetCurrentContext()];
+    imageRet = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return imageRet;
+    
+}
 
 #pragma mark ------------  timer方法  -------------------
 - (void)rotationScrollView {
@@ -156,6 +195,7 @@
                 }
                 break;
         }
+        
         if (@available(iOS 11.0, *)) {
             _scrollView.contentInsetAdjustmentBehavior = UIScrollViewContentInsetAdjustmentNever;
         }
@@ -163,7 +203,10 @@
     }
     return _scrollView;
 }
+
+
 #pragma mark ----------------  setter ----------------------
+
 - (void)setContentOffsetPage:(NSUInteger)contentOffsetPage{
     if (self.imagesArr.count <= contentOffsetPage)  return;
     if (self.infiniteSliding) {
@@ -209,7 +252,7 @@
                 if (scrollView.contentOffset.x >= self.frame.size.width*(self.showImagesArr.count-1)) {
                     [scrollView setContentOffset:CGPointMake(self.frame.size.width, 0) animated:NO];
                 }else if (scrollView.contentOffset.x <= 0) {//滑动到最后个切换到第一个
-                    [scrollView setContentOffset:CGPointMake(self.frame.size.width*(self.showImagesArr.count-1), 0) animated:NO];
+                    [scrollView setContentOffset:CGPointMake(self.frame.size.width*(self.showImagesArr.count-2), 0) animated:NO];
                 }
                 int page =  scrollView.contentOffset.x/self.frame.size.width;
                 self.currentPage = page-1;
@@ -220,7 +263,7 @@
                 if (scrollView.contentOffset.y >= self.frame.size.height*(self.showImagesArr.count-1)) {
                     [scrollView setContentOffset:CGPointMake(0, self.frame.size.height) animated:NO];
                 }else if (scrollView.contentOffset.y <= 0) {//滑动到最后个切换到第一个
-                    [scrollView setContentOffset:CGPointMake(0, self.frame.size.height*(self.showImagesArr.count-1)) animated:NO];
+                    [scrollView setContentOffset:CGPointMake(0, self.frame.size.height*(self.showImagesArr.count-2)) animated:NO];
                 }
                 int page =  scrollView.contentOffset.y/self.frame.size.height;
                 self.currentPage = page-1;
@@ -263,7 +306,7 @@
                 if (scrollView.contentOffset.x >= self.frame.size.width*(self.showImagesArr.count-1)) {
                     [scrollView setContentOffset:CGPointMake(self.frame.size.width, 0) animated:NO];
                 }else if (scrollView.contentOffset.x <= 0) {//滑动到最后个切换到第一个
-                    [scrollView setContentOffset:CGPointMake(self.frame.size.width*(self.showImagesArr.count-1), 0) animated:NO];
+                    [scrollView setContentOffset:CGPointMake(self.frame.size.width*(self.showImagesArr.count-2), 0) animated:NO];
                 }
                 int page =  scrollView.contentOffset.x/self.frame.size.width;
                 self.currentPage = page-1;
@@ -274,7 +317,7 @@
                 if (scrollView.contentOffset.y >= self.frame.size.height*(self.showImagesArr.count-1)) {
                     [scrollView setContentOffset:CGPointMake(0, self.frame.size.height) animated:NO];
                 }else if (scrollView.contentOffset.y <= 0) {//滑动到最后个切换到第一个
-                    [scrollView setContentOffset:CGPointMake(0, self.frame.size.height*(self.showImagesArr.count-1)) animated:NO];
+                    [scrollView setContentOffset:CGPointMake(0, self.frame.size.height*(self.showImagesArr.count-2)) animated:NO];
                 }
                 int page =  scrollView.contentOffset.y/self.frame.size.height;
                 self.currentPage = page-1;

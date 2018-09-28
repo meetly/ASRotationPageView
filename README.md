@@ -33,7 +33,7 @@
 /** 滑动完成的回调 */
 @property (nonatomic, copy) void(^ScrollDidEnd)(NSUInteger currentPage);
 /** 点击view的回调 */
-@property (nonatomic, copy) void(^SelectView)(UIView *view);
+@property (nonatomic, copy) void(^SelectView)(NSIntger index);
 
 /** 偏移到制定页 */
 @property (nonatomic, assign) NSUInteger contentOffsetPage;
